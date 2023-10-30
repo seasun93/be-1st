@@ -12,10 +12,26 @@ class User {
     async login(){
         const body = this.body;
         const data = await UserStorage.Match(body);
-        
-        if(!data.success) return data;
+        if(!data.success) return {data : data};
+        const token = await UserStorage.getToken(data)
+        return {data : data, accessToken : token.aToken};
+    }
 
-        return {success : true, msg : '로그인 성공'};
+    async register(){
+        const body = this.body;
+        try{
+            const data = await UserStorage.Add(body);
+            return data
+        } catch(err) {
+            return {success : false, msg : err}
+        }
+
+    }
+
+    async findToken(token){
+        const data = await UserStorage.FindToken(token);
+        return data
+
     }
     // 회원가입
     // 로그아웃

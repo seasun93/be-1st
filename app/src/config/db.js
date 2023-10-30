@@ -11,6 +11,6 @@ const pool = mysql.createPool({
     password : process.env.PASSWORD,
     database : process.env.DATABASE, // default schema
     debug : false,
-})
+}).promise()
 
 module.exports = pool
