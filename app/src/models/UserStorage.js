@@ -74,35 +74,73 @@ class UserStorage {
         }
     }
 
+    // 토큰을 이용한 유저찾기
+    static async FindUser(token){
+        const decoded = jwt.decode(token);
+        console.log(decoded)
+        const findUserSql = 'SELECT * FROM users WHERE userId = ?;';
+        const [[uData]] = await pool.query(findUserSql, [decoded.id]);
+        console.log(uData)
+        const user = {
+            id : uData.userId,
+            name : uData.userNm,
+            grade : uData.userGd,
+        }
+        return user;
+    }
     // 토큰 찾기
-    static async FindToken(token){
-        return new Promise((resolve, reject)=>{
-        //토큰을 디코드 하기
+    static async FindToken(user, token){
+        let reToken = {
+            aToken : '',
+        }
+        try {
+            // 유효
+            const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
+            const expireData = new Date(decoded.exp * 1000)
+            const now = new Date();
+            const difference = expireData - now; // 남은 밀리초 단위 시간 차이
+            const seconds = Math.floor(difference / 1000); // 남은 초 단위 시간 차이
+            console.log('만료까지 남은 시간:', seconds, '초');
 
-            // //jwt.verify(토큰, 시크릿코드,function(err, decoded){})
-            // jwt.verify(token,
-            //     process.env.JWT_SECRET_KEY,
-            //     function(err, decoded){
+            reToken.aToken = token
+            return reToken
 
-            //         if(err) return console.log(err)
+        } catch (err) {
+            // 만료
+            console.log('재발급중')
+            // refreshToken 가져오기
+            const refreshSql = 'SELECT * FROM users_token WHERE userId = ?;';
+            const [[reIssu]] = await pool.query(refreshSql,[user.id]);
 
-            //         console.log ('decoded + ' + decoded)
-            // });
+            if(!reIssu && reIssu === undefined) {
+                // 퀘리 실패 문제
+            }
+            // refreshToken 유효검사
+            const reDecoded = jwt.verify(reIssu.userTk , process.env.JWT_RE_SECRET_KEY);
+            const reExpireData = new Date(reDecoded.exp * 1000)
+            const reNow = new Date();
 
-            // jwt.verify(token, process.env.JWT_SECRET_KEY, function(err, decode){
-            //     // pool.getConnection((err,conn)=>{
-            //     //     if(err) return reject(err);
-            //     //     const userSql = "SELECT * from users_token WHERE userId = ? AND userTk = ?; ";
-            //     //     conn.query(userSql,[ decoded.id, token ],(err,data)=>{
-            //     //         if(err) return reject(err);
+            if(reExpireData < reNow) {
+                // refreshToken 만료, accessToken 만료
+                return {success : false , msg : '인증 실패. 다시 로그인 부탁드립니다.'}
+            }
+            // refreshToken 유효, accessToken 만료
+            // accessToken과 refreshToken 재발급후 accessToken은 다시 보내주고 refreshToken은 db에 update
+            const accessToken = jwt.sign(user, process.env.JWT_SECRET_KEY,{
+                expiresIn : process.env.JWT_EXPIRES_IN
+            })
+    
+            const refreshToken = jwt.sign(user, process.env.JWT_RE_SECRET_KEY,{
+                expiresIn : process.env.JWT_RE_EXPIRES_IN
+            })
 
-            //     //         resolve(data[0])
-                        
-            //     //     })
-            //     // })
-                
-            // } )
-        })
+            reToken.aToken = accessToken;
+
+            const updateSql = 'UPDATE users_token SET userTk = ? WHERE userId = ?;';
+            await pool.query(updateSql,[refreshToken, user.id])
+            console.log(reToken)
+            return reToken;
+        }
     }
 
     // 회원가입

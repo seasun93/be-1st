@@ -29,7 +29,16 @@ class User {
     }
 
     async findToken(token){
-        const data = await UserStorage.FindToken(token);
+        console.log('User token--------')
+        console.log(token)
+        console.log('------------------------')
+        const user = await UserStorage.FindUser(token)
+        const reToken = await UserStorage.FindToken(user, token);
+        console.log(reToken)
+        const data = {
+            user : user,
+            token : reToken.aToken,
+        }
         return data
 
     }

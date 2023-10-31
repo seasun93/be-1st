@@ -20,7 +20,7 @@ const process = {
         }
         return res.cookie('x_auth', response.accessToken, {
             httpOnly: true,
-            maxAge : 30 * 60 * 1000,
+            maxAge : 10* 60 * 60 * 1000,
         }).status(200).json({loginSuccess : response.data})
     },
 
@@ -32,14 +32,20 @@ const process = {
     },
     auth : (req,res)=>{
         if(!req.loginSuccess){
-            return res.json({loginSuccess : false, msg : req.msg})
+            return res.json({loginSuccess : false, data : req.data})
         }
-        res.status(200).json({
-            id : req.user.userId,
-            name : req.user.userNm,
-            isAdmin : req.users.userGd === 0 ? false : true,
-            isAuth : true,
-            grade : req.user.userGd
+        res.cookie('x_auth', req.data.token, {
+            httpOnly: true,
+            maxAge : 10* 60 * 60 * 1000,
+        }).status(200).json({
+            loginSuccess : true,
+            data : {
+                id : req.data.user.id,
+                name : req.data.user.name,
+                grade : req.data.user.grade,
+                isAdmin : req.data.user.grade === 1 ?  true: false,
+                isAuth : true,
+            }
         })
 
     },
