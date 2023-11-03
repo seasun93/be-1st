@@ -15,10 +15,12 @@ app.use(cookieParser());
 // 라우트 연결
 const homeRouter = require('./src/controllers/home/home.route');
 const userRouter = require('./src/controllers/users/users.route');
+const boardRouter = require('./src/controllers/boards/boards.route');
 
 
 
 app.use('/', homeRouter);
 app.use('/api/users/', userRouter);
+app.use('/api/boards/', boardRouter);
 
 module.exports = app;

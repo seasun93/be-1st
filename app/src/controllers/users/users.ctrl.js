@@ -30,6 +30,35 @@ const process = {
 
         res.json(response);
     },
+
+    idCheck : async (req, res)=>{
+        const user = new User(req.body);
+        const response = await user.idCheck();
+        
+        res.json(response);
+    },
+
+    logout : async (req, res)=>{
+        const user = new User(req.body);
+        const response = await user.logout();
+        if(!response.success) {
+            //로그아웃 실패
+            return res.json({logoutSuccess : false})
+        }
+        return res.clearCookie('x_auth').json({logoutSuccess : true})
+    },
+    
+    edit : async (req, res)=>{
+        const user = new User(req.body);
+        const response = await user.Edit();
+
+        if(!response.success) {
+            res.json({success : false, msg : '개인 정보 수정 실패'})
+        }
+        // token 삭제 했으니 cookie에서도 삭제 하기
+        res.clearCookie('x_auth').json({success : true, msg : '정보 수정 완료'})
+    },
+
     auth : (req,res)=>{
         if(!req.loginSuccess){
             return res.json({loginSuccess : false, data : req.data})
@@ -49,6 +78,7 @@ const process = {
         })
 
     },
+
 }
 
 module.exports = {
