@@ -14,6 +14,7 @@ const output = {
 const process = {
     login : async (req,res)=>{
         const user = new User(req.body);
+        console.log(user)
         const response = await user.login();
         if(!response.data.success) {
             return res.json({loginSuccess : response.data})

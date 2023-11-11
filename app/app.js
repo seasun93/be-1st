@@ -21,6 +21,6 @@ const boardRouter = require('./src/controllers/boards/boards.route');
 
 app.use('/', homeRouter);
 app.use('/api/users/', userRouter);
-app.use('/api/boards/', boardRouter);
+app.use('/api/', boardRouter);
 
 module.exports = app;

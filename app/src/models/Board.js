@@ -5,12 +5,19 @@ class Board {
         this.body = body;
     }
 
-    async getList(){
+    // 게시글 리프트
+    async getList(path, page){
         const request = this.body;
-        const data = BoardStorage.getList(request)
-        console.log(request);
-    }
+        const data = await BoardStorage.getList(request, path, page);
+        return data;
+    } 
 
+    async Post(){
+        const request = this.body;
+        const type = request.type;
+        const data = await BoardStorage.Post(request, type);
+        return data;
+    }
 
 }
 

@@ -12,7 +12,6 @@ class User {
     async login(){
         const body = this.body;
         const data = await UserStorage.Match(body);
-        console.log(data)
         if(!data.success) return {data : data};
         const token = await UserStorage.getToken(data)
         return {data : data, accessToken : token.aToken};
